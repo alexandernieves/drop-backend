@@ -37,10 +37,10 @@ const upload = multer({ storage });
 
 
 // Servir la carpeta de uploads como estático
-app.use('https://dropi.co.alexcode.org/drop/backend/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('https://dropi.co.alexcode.org/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 
-app.use('https://dropi.co.alexcode.org/drop/backend/public/suppliers', express.static(path.join(__dirname, 'public/suppliers')));
+app.use('https://dropi.co.alexcode.org/public/suppliers', express.static(path.join(__dirname, 'public/suppliers')));
 
 // Configuración de Multer (para logo de la tienda, por ejemplo)
 const storageSuppliers = multer.diskStorage({
@@ -55,6 +55,7 @@ const storageSuppliers = multer.diskStorage({
 });
 const uploadSuppliers = multer({ storage: storageSuppliers });
 
+
 // Configuración de Multer para manejo de archivos en perfil (guardados en public/profile)
 const storageProfile = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -68,7 +69,7 @@ const storageProfile = multer.diskStorage({
 const uploadProfile = multer({ storage: storageProfile });
 
 // Servir archivos estáticos (para imágenes de perfil)
-app.use('https://dropi.co.alexcode.org/drop/backend/public/profile', express.static(path.join(__dirname, 'public/profile')));
+app.use('https://dropi.co.alexcode.org/public/profile', express.static(path.join(__dirname, 'public/profile')));
 
 // ──────────────────────────────────────────────────────────
 // 2) CONEXIÓN A LA BASE DE DATOS
@@ -373,7 +374,7 @@ app.post('/api/profile', uploadProfile.single('profile_image'), (req, res) => {
   let imagen = null;
   if (req.file) {
     // La ruta que se guardará en la BD y que será accesible desde el frontend
-    imagen = `https://dropi.co.alexcode.org/drop/backend/public/profile/${req.file.filename}`;
+    imagen = `https://dropi.co.alexcode.org/public/profile/${req.file.filename}`;
   }
   const checkEmailQuery = 'SELECT COUNT(*) AS count FROM users WHERE email = ? AND uuid != ?';
   pool.query(checkEmailQuery, [email, user_uuid], (err, result) => {
@@ -2081,7 +2082,7 @@ app.post('/api/productos', upload.single('imagen'), (req, res) => {
     // Si se subió un archivo, construimos la ruta
     let imagen = null;
     if (req.file) {
-      imagen = `https://dropi.co.alexcode.org/drop/backend/public/uploads/${req.file.filename}`;
+      imagen = `https://dropi.co.alexcode.org/public/uploads/${req.file.filename}`;
     }
 
     // Validar campos obligatorios
@@ -2158,7 +2159,7 @@ app.put('/api/productos/:id', upload.single('imagen'), (req, res) => {
     // Si se subió un archivo, construimos la ruta
     let imagen = null;
     if (req.file) {
-      imagen = `https://dropi.co.alexcode.org/drop/backend/public/uploads/${req.file.filename}`;
+      imagen = `https://dropi.co.alexcode.org/public/uploads/${req.file.filename}`;
     }
 
     if (
@@ -2239,6 +2240,10 @@ app.delete('/api/productos/:id', (req, res) => {
     res.json({ message: 'Producto eliminado correctamente' });
   });
 });
+
+
+
+
 
 app.get('/api/user-role', (req, res) => {
   console.log('Llamada a /api/user-role con query:', req.query);
@@ -2321,7 +2326,7 @@ app.post('/api/stores', uploadSuppliers.single('logo'), (req, res) => {
   let imagen = null;
   if (req.file) {
     // Ruta accesible desde frontend => /suppliers/lo_que_guarde_multer
-    imagen = 'https://dropi.co.alexcode.org/drop/backend/public/suppliers/' + req.file.filename;
+    imagen = 'https://dropi.co.alexcode.org/public/suppliers/' + req.file.filename;
   }
 
   const insertQuery = `
