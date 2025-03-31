@@ -55,7 +55,6 @@ const storageSuppliers = multer.diskStorage({
 });
 const uploadSuppliers = multer({ storage: storageSuppliers });
 
-
 // Configuración de Multer para manejo de archivos en perfil (guardados en public/profile)
 const storageProfile = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -1909,6 +1908,91 @@ app.get('/api/addbank', (req, res) => {
 });
 
 
+app.post('/api/pedidos', (req, res) => {
+  console.log('POST /api/pedidos => req.body:', req.body);
+
+  const {
+    user_uuid,
+    nombre,
+    apellido,
+    telefono,
+    email,
+    direccion,
+    con_recaudo,
+    producto_id,
+    cantidad,
+    precio_venta,
+    transportadora,
+  } = req.body;
+
+  const query = `
+    INSERT INTO pedidos (
+      user_uuid,
+      nombre,
+      apellido,
+      telefono,
+      email,
+      direccion,
+      con_recaudo,
+      producto_id,
+      cantidad,
+      precio_venta,
+      transportadora
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [
+    user_uuid,
+    nombre,
+    apellido,
+    telefono,
+    email || null,
+    direccion,
+    con_recaudo ? 1 : 0,
+    producto_id,
+    cantidad,
+    precio_venta,
+    transportadora,
+  ];
+
+  pool.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Error al insertar pedido:', err);
+      return res.status(500).json({ error: 'Error al insertar pedido' });
+    }
+    console.log('Pedido insertado. ID =', result.insertId);
+    res.json({
+      success: true,
+      message: 'Pedido creado exitosamente',
+      pedidoId: result.insertId,
+    });
+  });
+});
+
+
+// GET /api/carriers (sin filtrar por user_uuid)
+app.get('/api/couriers', (req, res) => {
+  console.log('Recibida petición GET /api/carriers');
+
+  const query = `
+    SELECT
+      id,
+      user_uuid,
+      carrier_name,
+      carrier_order
+    FROM carriers_order
+  `;
+
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener carriers:', err);
+      return res.status(500).json({ error: 'Error al obtener carriers' });
+    }
+
+    console.log('Carriers devueltos:', results);
+    res.json(results);
+  });
+});
+
 
 app.get('/api/carriers', (req, res) => {
   const { user_uuid } = req.query;
@@ -1976,6 +2060,11 @@ app.post('/api/carriers', (req, res) => {
       });
   });
 });
+
+
+
+
+
 
 
 
@@ -2241,10 +2330,6 @@ app.delete('/api/productos/:id', (req, res) => {
   });
 });
 
-
-
-
-
 app.get('/api/user-role', (req, res) => {
   console.log('Llamada a /api/user-role con query:', req.query);
   const { uuid } = req.query;
@@ -2452,3 +2537,4 @@ app.get('/api/user-info', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
